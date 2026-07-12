@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+
+# Generated files
+generated/
+output/
+README_generated.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# npm cache
+.npm/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage
+coverage/
+
+# Build artifacts
+dist/
+
+prompts/repositoryPrompt.js 
