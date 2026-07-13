@@ -21,8 +21,14 @@ export async function generateCompletion(prompt) {
                     content: prompt
                 }
             ],
-            temperature: 0.3
+            temperature: 0.3,
+            max_tokens: 6000
         });
+    const content = response.choices[0].message.content;
 
-    return response.choices[0].message.content;
+    console.log("Generated tokens:", content.length);
+
+    return content;
+
+    //return response.choices[0].message.content;
 }
