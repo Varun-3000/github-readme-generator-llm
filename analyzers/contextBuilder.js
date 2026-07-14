@@ -22,10 +22,12 @@ export function buildRepositoryContext(
         },
 
         project: {
-            type: projectType,
-            frameworks,
-            dependencies,
-            architecture
+            type: projectType.type || projectType,
+                    frameworks,
+                    dependencies,
+                    architecture,
+            confidence: projectType.confidence || 1.0,
+            evidence: projectType.evidence || []
         },
 
         structure: {

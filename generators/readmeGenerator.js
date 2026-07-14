@@ -13,7 +13,5 @@ export async function generateReadme(
             repositoryContext
         );
 
-    return await generateCompletion(
-        prompt
-    );
+    return await generateCompletion(prompt);
 }

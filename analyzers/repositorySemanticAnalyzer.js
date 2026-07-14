@@ -18,5 +18,11 @@ export async function llmAnalyzer(
     const response =
         await askLLM(prompt);
 
-    return JSON.parse(response);
+    try {
+            return JSON.parse(response);
+        }
+    catch (error) {
+            console.error("Failed to parse LLM response",error);
+            return {};
+    }
 }
