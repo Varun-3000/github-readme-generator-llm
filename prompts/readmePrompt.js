@@ -39,6 +39,13 @@ README Sections:
 
 # Future Improvements
 
+When describing architecture:
+
+- Mention only components backed by actual functions or files.
+- Mention caching only if cache-related functions exist.
+- Mention incremental updates only if cache or merge functions exist.
+- Mention dynamic scraper loading only if importlib or dynamic imports are detected.
+
 Rules:
 
 - Use ONLY information explicitly present in repository context.

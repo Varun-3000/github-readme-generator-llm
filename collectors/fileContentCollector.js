@@ -21,11 +21,17 @@ export async function collectFileContents(
                     repo,
                     file
                 );
+            const limit =
+                file.includes("/scrapers/")
+                ? 250
+                : file.includes("/utils/")
+                ? 200
+                : 100;
 
             contents[file] =
                 content
                     .split("\n")
-                    .slice(0, 100)
+                    .slice(0, limit)
                     .join("\n");
 
             console.log(

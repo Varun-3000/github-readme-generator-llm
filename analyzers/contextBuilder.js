@@ -5,7 +5,11 @@ export function buildRepositoryContext(
     dependencies,
     architecture,
     projectType,
-    files
+    files,
+    functions,
+    environmentVariables,
+    databases,
+    deployment
 ) {
 
     return {
@@ -26,6 +30,10 @@ export function buildRepositoryContext(
                     frameworks,
                     dependencies,
                     architecture,
+                    functions,
+                    environmentVariables,
+                    databases,
+                    deployment,
             confidence: projectType.confidence,
             evidence: projectType.evidence
         },

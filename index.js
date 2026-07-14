@@ -31,6 +31,18 @@ from "./analyzers/architectureAnalyzer.js";
 import { detectProjectType }
 from "./analyzers/projectTypeAnalyzer.js";
 
+import { analyzeFunctions }
+from "./analyzers/functionAnalyzer.js";
+
+import { analyzeEnvironmentVariables }
+from "./analyzers/environmentAnalyzer.js";
+
+import { analyzeDatabases }
+from "./analyzers/databaseAnalyzer.js";
+
+import { analyzeDeployment}
+from "./analyzers/deploymentAnalyzer.js";
+
 async function main() {
 
     const owner = "KalyanM45";
@@ -80,19 +92,31 @@ async function main() {
         dependencies
     );
 
-    const context = buildRepositoryContext(
-        repository,
-        structure,
-        frameworks,
-        dependencies,
-        architecture,
-        projectType,
-        fileContents
+    const functions = analyzeFunctions(fileContents);
+
+    const environmentVariables = analyzeEnvironmentVariables(fileContents);
+
+    const databases = analyzeDatabases(dependencies);
+
+    const deployment = analyzeDeployment(structure);
+
+    const repositoryContext = buildRepositoryContext(
+           repository,
+            structure,
+            frameworks,
+            dependencies,
+            architecture,
+            projectType,
+            fileContents,
+            functions,
+            environmentVariables,
+            databases,
+            deployment
     );
 
     console.log(
         JSON.stringify(
-            context,
+            repositoryContext,
             null,
             2
         )
@@ -101,7 +125,7 @@ async function main() {
 
     const readme =
         await generateReadme(
-            context
+            repositoryContext
         );
 
     console.log(readme);
