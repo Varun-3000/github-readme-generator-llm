@@ -26,8 +26,8 @@ export function buildRepositoryContext(
                     frameworks,
                     dependencies,
                     architecture,
-            confidence: projectType.confidence || 1.0,
-            evidence: projectType.evidence || []
+            confidence: projectType.confidence,
+            evidence: projectType.evidence
         },
 
         structure: {

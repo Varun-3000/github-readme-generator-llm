@@ -19,5 +19,9 @@ export function detectProjectType(
                 };
     }
 
-    return "Software Project";
+    return {
+        type: "Software Project",
+        confidence: 0.5,
+        evidence: []
+    };
 }

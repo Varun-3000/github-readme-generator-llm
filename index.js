@@ -66,9 +66,10 @@ async function main() {
             importantFiles
         );
 
-    const frameworks =  detectFrameworks( structure, fileContents);
-
     const dependencies = analyzeDependencies(fileContents);
+
+    const frameworks =  detectFrameworks( dependencies, structure);
+
 
     const architecture = analyzeArchitecture(
         structure

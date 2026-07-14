@@ -20,9 +20,19 @@ export async function llmAnalyzer(
 
     try {
             return JSON.parse(response);
-        }
-    catch (error) {
-            console.error("Failed to parse LLM response",error);
-            return {};
+    } 
+    catch {
+        try {
+
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (
+                jsonMatch
+            ) {
+                return JSON.parse(jsonMatch[0]);
+            }
+
+        } catch {}
+
+        return {};
     }
 }

@@ -1,30 +1,33 @@
-export function buildReadmePrompt(context) {
+export function buildReadmePrompt(
+    context
+) {
+
     return `
 You are a senior software architect.
 
 Generate a professional GitHub README.md.
 
 Repository Context:
-${JSON.stringify(context, null, 2)}
 
-The README must contain:
+${JSON.stringify(
+    context,
+    null,
+    2
+)}
+
+README Sections:
 
 # Project Title
 
 # Overview
-Explain what the project does.
 
 # Features
-List major capabilities.
 
 # Architecture
-Explain backend/frontend/modules.
 
 # Tech Stack
-Mention all technologies detected.
 
 # Project Structure
-Explain important folders.
 
 # Installation
 
@@ -33,26 +36,34 @@ Explain important folders.
 # Usage
 
 # Workflow
-Explain how data flows through the system.
 
 # Future Improvements
 
 Rules:
-- Use ONLY information explicitly present in the repository context.
-- Never infer features from folder names.
-- Never assume scalability, performance, security, AI agents, parallel processing, or production readiness unless directly supported by code.
-- If evidence is missing, omit the statement.
-- Every architecture section must reference actual files or folders.
-- Mention technologies only if present in dependencies or source files.
-- Prefer under-reporting over hallucinating.
 
-CRITICAL RULES:
-- Every claim must be supported by repository context.
-- Never invent features.
-- Never invent scalability characteristics.
-- Never invent security properties.
-- Never invent performance claims.
-- If information is unavailable, omit it.
-- Use only evidence present in repository context.
+- Use ONLY information explicitly present in repository context.
+- Never infer features from folder names.
+- Never infer scalability characteristics.
+- Never infer performance optimizations.
+- Never infer security properties.
+- Never infer production readiness.
+- Never invent AI agents.
+- Never invent distributed systems.
+- Never invent parallel processing.
+- Never invent databases.
+- Never invent cloud infrastructure.
+- Mention technologies only if present in dependencies or files.
+- Every architecture statement must reference actual files or folders.
+- If evidence is missing, omit the statement entirely.
+- Prefer under-reporting over hallucinating.
+- Do not write placeholders such as:
+  - TBD
+  - Unknown
+  - Not Available
+- If a section cannot be generated from repository evidence, omit the section.
+- Never explain assumptions.
+- Every claim must be traceable to repository context.
+
+Generate markdown only.
 `;
 }

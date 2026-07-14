@@ -1,39 +1,56 @@
-export function detectFrameworks(structure, files) {
+export function detectFrameworks(
+    dependencies,
+    structure
+) {
 
     const frameworks = [];
 
-    const pyproject = files["pyproject.toml"] || "";
+    const addFramework = (
+        dependencyName,
+        frameworkName
+    ) => {
 
-    if (pyproject.includes("fastapi"))
-        frameworks.push({
-                name: "FastAPI",
-                evidence: "fastapi dependency",
-            confidence: 1.0
-    });
+        if (
+            dependencies.some(
+                dep =>
+                    dep.name.toLowerCase() ===
+                    dependencyName.toLowerCase()
+            )
+        ) {
+            frameworks.push({
+                name: frameworkName,
+                evidence:
+                    `${dependencyName} dependency`,
+                confidence: 1.0
+            });
+        }
+    };
 
-    if (pyproject.includes("flask"))
-        frameworks.push({
-            name: "Flask",
-            evidence: "flask dependency",
-            confidence: 1.0
-        });
+    addFramework(
+        "fastapi",
+        "FastAPI"
+    );
 
-    if (pyproject.includes("django"))
-        frameworks.push({
-            name: "Django",
-            evidence: "django dependency",
-            confidence: 1.0
-        });
+    addFramework(
+        "flask",
+        "Flask"
+    );
 
-    if (pyproject.includes("langchain")){
-        frameworks.push({
-            name: "LangChain",
-            evidence: "langchain dependency",
-            confidence: 1.0
-        });
-    }
+    addFramework(
+        "django",
+        "Django"
+    );
 
-    if (structure.configFiles.includes("vercel.json")) {
+    addFramework(
+        "langchain",
+        "LangChain"
+    );
+
+    if (
+        structure.configFiles.includes(
+            "vercel.json"
+        )
+    ) {
         frameworks.push({
             name: "Vercel",
             evidence: "vercel.json",

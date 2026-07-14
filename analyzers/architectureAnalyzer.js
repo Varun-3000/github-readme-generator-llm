@@ -6,7 +6,8 @@ export function analyzeArchitecture(structure) {
     {
         architecture.push({
             name: "Backend Layer",
-            evidence: "backend folder"
+            evidence: "backend/",
+            confidence: 1.0
         });
     }
 
@@ -14,7 +15,8 @@ export function analyzeArchitecture(structure) {
     {
         architecture.push({
             name: "Frontend Layer",
-            evidence: "frontend folder"
+            evidence: "frontend/",
+            confidence: 1.0
         });
     }
 
@@ -22,7 +24,8 @@ export function analyzeArchitecture(structure) {
     {
         architecture.push({
             name: "Scraper Engine",
-            evidence: "backend/scrapers folder"
+            evidence: "backend/scrapers/",
+            confidence: 1.0
         });
     }
 
@@ -30,7 +33,11 @@ export function analyzeArchitecture(structure) {
     {
         architecture.push({
             name: "LLM Prompt Layer",
-            evidence: "backend/prompts folder"
+            evidence: [
+                "backend/prompts/Classify_Category.md",
+                "backend/prompts/Classify_DataJob.md"
+            ] ,            
+            confidence: 1.0
         });
     }
 

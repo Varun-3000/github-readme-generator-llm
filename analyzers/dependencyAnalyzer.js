@@ -5,14 +5,29 @@ export function analyzeDependencies(files) {
 
     const dependencies = [];
 
-    const regex = /"([^"]+)"/g;
+    const dependencySection =
+        pyproject.match(
+            /dependencies\s*=\s*\[(.*?)\]/s
+        );
 
-    let match;
+    if (!dependencySection) {
+        return dependencies;
+    }
 
-    while ((match = regex.exec(pyproject)) !== null) {
+    const matches =
+        dependencySection[1]
+            .match(/"([^"]+)"/g) || [];
+
+    for (const dependency of matches) {
+
+        const cleanName =
+            dependency
+                .replace(/"/g, "")
+                .replace(/[<>=!~].*/, "")
+                .trim();
 
         dependencies.push({
-            name: match[1],
+            name: cleanName,
             source: "pyproject.toml",
             confidence: 1.0
         });
