@@ -1,52 +1,63 @@
-import { fetchRepository }
-from "./collectors/repositoryCollector.js";
+#!/usr/bin/env node
+import fs from "fs";
+import path from "path";
 
-import { fetchFileTree }
-from "./collectors/fileTreeCollector.js";
+import { fetchRepository } from "./collectors/repositoryCollector.js";
 
-import { analyzeRepositoryStructure }
-from "./analyzers/repositoryAnalyzer.js";
+import { fetchFileTree } from "./collectors/fileTreeCollector.js";
 
-import { collectImportantFiles }
-from "./collectors/importantFilesCollector.js";
+import { analyzeRepositoryStructure } from "./analyzers/repositoryAnalyzer.js";
 
-import { collectFileContents }
-from "./collectors/fileContentCollector.js";
+import { collectImportantFiles } from "./collectors/importantFilesCollector.js";
 
-import { buildRepositoryContext }
-from "./analyzers/contextBuilder.js";
+import { collectFileContents } from "./collectors/fileContentCollector.js";
 
-import { generateReadme }
-from "./generators/readmeGenerator.js";
+import { buildRepositoryContext } from "./analyzers/contextBuilder.js";
 
-import { detectFrameworks }
-from "./analyzers/frameworkAnalyzer.js";
+import { generateReadme } from "./generators/readmeGenerator.js";
 
-import { analyzeDependencies }
-from "./analyzers/dependencyAnalyzer.js";
+import { detectFrameworks } from "./analyzers/frameworkAnalyzer.js";
 
-import { analyzeArchitecture }
-from "./analyzers/architectureAnalyzer.js";
+import { analyzeDependencies } from "./analyzers/dependencyAnalyzer.js";
 
-import { detectProjectType }
-from "./analyzers/projectTypeAnalyzer.js";
+import { analyzeArchitecture } from "./analyzers/architectureAnalyzer.js";
 
-import { analyzeFunctions }
-from "./analyzers/functionAnalyzer.js";
+import { detectProjectType } from "./analyzers/projectTypeAnalyzer.js";
 
-import { analyzeEnvironmentVariables }
-from "./analyzers/environmentAnalyzer.js";
+import { analyzeFunctions } from "./analyzers/functionAnalyzer.js";
 
-import { analyzeDatabases }
-from "./analyzers/databaseAnalyzer.js";
+import { analyzeEnvironmentVariables } from "./analyzers/environmentAnalyzer.js";
 
-import { analyzeDeployment}
-from "./analyzers/deploymentAnalyzer.js";
+import { analyzeDatabases } from "./analyzers/databaseAnalyzer.js";
+
+import { analyzeDeployment} from "./analyzers/deploymentAnalyzer.js";
 
 async function main() {
 
-    const owner = "KalyanM45";
-    const repo = "CareerCrawl";
+    // const owner = "KalyanM45";
+    // const repo = "CareerCrawl";
+    const outputDir = "./output";
+    if (!fs.existsSync(outputDir)) 
+    {
+        fs.mkdirSync(outputDir);
+    }
+    const owner = process.argv[2];
+    const repo = process.argv[3];
+
+    if (!owner || !repo) {
+        console.log(`
+    Usage: 
+            node index.js <owner> <repo>"
+    Examples:
+            node index.js facebook react
+            node index.js microsoft vscode
+            node index.js vercel next.js
+        `);
+
+        process.exit(1);
+    }
+
+    console.log(`Analyzing ${owner}/${repo}...`);
 
     const repository =
         await fetchRepository(
@@ -114,6 +125,12 @@ async function main() {
             deployment
     );
 
+
+    fs.writeFileSync(
+        path.join(outputDir,"repository-context.json"),
+        JSON.stringify(repositoryContext,null,2)
+    );
+
     console.log(
         JSON.stringify(
             repositoryContext,
@@ -121,14 +138,62 @@ async function main() {
             2
         )
     );
-
-
+    
     const readme =
         await generateReadme(
             repositoryContext
         );
 
-    console.log(readme);
+    //console.log(readme);
+    fs.writeFileSync( path.join(outputDir,"README.generated.md"),readme);
+
+    const confidenceReport = 
+    {   projectType,
+
+        frameworks,
+
+        dependencies,
+
+        architecture,
+
+        deployment,
+
+        databases,
+
+        statistics: {
+
+            frameworksDetected:
+                frameworks.length,
+
+            dependenciesDetected:
+                dependencies.length,
+
+            architectureComponents:
+                architecture.length,
+
+            functionsDetected:
+                functions.length,
+
+            environmentVariables:
+                environmentVariables.length
+        }
+
+    };
+
+    fs.writeFileSync(
+        path.join(outputDir,"confidence-report.json"),
+        JSON.stringify(confidenceReport,null,2)
+    );
+            
+        console.log("\n✅ README generated successfully.\n");
+        
+        console.log("Generated files:");
+        
+        console.log("output/README.generated.md");
+        
+        console.log("output/repository-context.json");
+        
+        console.log("output/confidence-report.json");
 }
 
 main();

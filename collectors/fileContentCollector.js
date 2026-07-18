@@ -22,12 +22,19 @@ export async function collectFileContents(
                     file
                 );
             const limit =
-                file.includes("/scrapers/")
+                file.endsWith("main.py") ||
+                file.endsWith("app.py") ||
+                file.endsWith("server.py") ||
+                file.endsWith("index.js") ||
+                file.endsWith("main.js")
+                ? 400
+                : file.includes("/prompts/")
+                ? 500
+                : file.includes("/scrapers/")
                 ? 250
                 : file.includes("/utils/")
                 ? 200
                 : 100;
-
             contents[file] =
                 content
                     .split("\n")

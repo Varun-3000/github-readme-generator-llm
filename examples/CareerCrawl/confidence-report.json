@@ -1,0 +1,87 @@
+{
+  "projectType": {
+    "type": "LLM Application",
+    "confidence": 0.8,
+    "evidence": [
+      "langchain dependency"
+    ]
+  },
+  "frameworks": [
+    {
+      "name": "LangChain",
+      "evidence": "langchain dependency",
+      "confidence": 1
+    },
+    {
+      "name": "Vercel",
+      "evidence": "vercel.json",
+      "confidence": 1
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "langchain",
+      "source": "pyproject.toml",
+      "confidence": 1
+    },
+    {
+      "name": "langchain-core",
+      "source": "pyproject.toml",
+      "confidence": 1
+    },
+    {
+      "name": "langchain-groq",
+      "source": "pyproject.toml",
+      "confidence": 1
+    },
+    {
+      "name": "python-dotenv",
+      "source": "pyproject.toml",
+      "confidence": 1
+    },
+    {
+      "name": "requests",
+      "source": "pyproject.toml",
+      "confidence": 1
+    }
+  ],
+  "architecture": [
+    {
+      "name": "Backend Layer",
+      "evidence": "backend/",
+      "confidence": 1
+    },
+    {
+      "name": "Frontend Layer",
+      "evidence": "frontend/",
+      "confidence": 1
+    },
+    {
+      "name": "Scraper Engine",
+      "evidence": "backend/scrapers/",
+      "confidence": 1
+    },
+    {
+      "name": "LLM Prompt Layer",
+      "evidence": [
+        "backend/prompts/Classify_Category.md",
+        "backend/prompts/Classify_DataJob.md"
+      ],
+      "confidence": 1
+    }
+  ],
+  "deployment": [
+    {
+      "platform": "Vercel",
+      "evidence": "vercel.json"
+    }
+  ],
+  "databases": [],
+  "statistics": {
+    "frameworksDetected": 2,
+    "dependenciesDetected": 5,
+    "architectureComponents": 4,
+    "functionsDetected": 2,
+    "environmentVariables": 0
+  }
+}

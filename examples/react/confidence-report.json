@@ -1,0 +1,24 @@
+{
+  "projectType": {
+    "type": "Software Project",
+    "confidence": 0.5,
+    "evidence": []
+  },
+  "frameworks": [],
+  "dependencies": [],
+  "architecture": [],
+  "deployment": [
+    {
+      "platform": "GitHub Actions",
+      "evidence": ".github/workflows"
+    }
+  ],
+  "databases": [],
+  "statistics": {
+    "frameworksDetected": 0,
+    "dependenciesDetected": 0,
+    "architectureComponents": 0,
+    "functionsDetected": 0,
+    "environmentVariables": 0
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "repository": {
+    "name": "CareerCrawl",
+    "owner": "KalyanM45",
+    "description": "This Repository contains a Python scraper that crawls company career portals, uses Large Language Models to extract insights from job descriptions, experience, work mode, and role type, and automatically filters out non-tech positions, delivering a clean, curated tech job feed.",
+    "language": "Python",
+    "stars": 1,
+    "forks": 0,
+    "topics": [
+      "ai-agents",
+      "ai-agents-automation",
+      "ai-project",
+      "ai-projects",
+      "data-extraction",
+      "data-extractor",
+      "job-board",
+      "job-portal",
+      "job-search",
+      "llm-project",
+      "llm-projects"
+    ]
+  },
+  "project": {
+    "type": "LLM Application",
+    "frameworks": [
+      {
+        "name": "LangChain",
+        "evidence": "langchain dependency",
+        "confidence": 1
+      },
+      {
+        "name": "Vercel",
+        "evidence": "vercel.json",
+        "confidence": 1
+      }
+    ],
+    "dependencies": [
+      {
+        "name": "langchain",
+        "source": "pyproject.toml",
+        "confidence": 1
+      },
+      {
+        "name": "langchain-core",
+        "source": "pyproject.toml",
+        "confidence": 1
+      },
+      {
+        "name": "langchain-groq",
+        "source": "pyproject.toml",
+        "confidence": 1
+      },
+      {
+        "name": "python-dotenv",
+        "source": "pyproject.toml",
+        "confidence": 1
+      },
+      {
+        "name": "requests",
+        "source": "pyproject.toml",
+        "confidence": 1
+      }
+    ],
+    "architecture": [
+      {
+        "name": "Backend Layer",
+        "evidence": "backend/",
+        "confidence": 1
+      },
+      {
+        "name": "Frontend Layer",
+        "evidence": "frontend/",
+        "confidence": 1
+      },
+      {
+        "name": "Scraper Engine",
+        "evidence": "backend/scrapers/",
+        "confidence": 1
+      },
+      {
+        "name": "LLM Prompt Layer",
+        "evidence": [
+          "backend/prompts/Classify_Category.md",
+          "backend/prompts/Classify_DataJob.md"
+        ],
+        "confidence": 1
+      }
+    ],
+    "functions": [
+      {
+        "name": "_save_company_meta",
+        "file": "main.py"
+      },
+      {
+        "name": "_load_scraper",
+        "file": "main.py"
+      }
+    ],
+    "environmentVariables": [],
+    "databases": [],
+    "deployment": [
+      {
+        "platform": "Vercel",
+        "evidence": "vercel.json"
+      }
+    ],
+    "confidence": 0.8,
+    "evidence": [
+      "langchain dependency"
+    ]
+  },
+  "structure": {
+    "languages": [
+      "Python",
+      "JavaScript"
+    ],
+    "entryPoints": [
+      "main.py"
+    ],
+    "configFiles": [
+      ".env.example",
+      "backend/config/__init__.py",
+      "backend/config/config.py",
+      "vercel.json"
+    ],
+    "dependencyFiles": [
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    "documentationFiles": [
+      "README.md",
+      "backend/prompts/Classify_Category.md",
+      "backend/prompts/Classify_DataJob.md"
+    ],
+    "folders": [
+      "backend",
+      "backend/config",
+      "backend/prompts",
+      "backend/scrapers",
+      "backend/scrapers/templates",
+      "backend/utils",
+      "frontend",
+      "frontend/assets",
+      "frontend/assets/css",
+      "frontend/assets/images",
+      "frontend/assets/js",
+      "frontend/data",
+      "frontend/data/cache",
+      "frontend/html"
+    ]
+  },
+  "files": {
+    "main.py": "import sys\nimport os\nimport json\nimport importlib\n\nsys.path.insert(0, os.path.dirname(__file__))\n\nfrom backend.config.config import COMPANIES\nfrom scrapers.utils import save_output\n\n\ndef _save_company_meta(companies: list) -> None:\n    data_dir = os.path.join(os.path.dirname(__file__), \"public\", \"data\")\n    os.makedirs(data_dir, exist_ok=True)\n    meta = {\n        c[\"company\"][\"name\"]: c[\"company\"].get(\"image\", \"\")\n        for c in companies\n        if c.get(\"company\", {}).get(\"name\")\n    }\n    path = os.path.join(data_dir, \"companies.json\")\n    with open(path, \"w\", encoding=\"utf-8\") as f:\n        json.dump(meta, f, ensure_ascii=False, indent=2)\n    print(f\"  Company meta saved → {path}\")\n\n\ndef _load_scraper(scraper_key: str):\n    \"\"\"Return the scrape_company function for the given key.\"\"\"\n    if \".\" in scraper_key:\n        # custom.<module>  →  scrapers.custom.<module>\n        module_path = f\"scrapers.custom.{scraper_key.split('.', 1)[1]}\"\n    else:\n        # built-in platform  →  scrapers.<platform>\n        module_path = f\"scrapers.{scraper_key}\"\n\n    try:\n        mod = importlib.import_module(module_path)\n    except ModuleNotFoundError as e:\n        raise SystemExit(f\"[ERROR] Cannot find scraper module '{module_path}': {e}\")\n\n    if not hasattr(mod, \"scrape_company\"):\n        raise SystemExit(\n            f\"[ERROR] '{module_path}' has no scrape_company() function.\"\n        )\n    return mod.scrape_company\n\n\nif __name__ == \"__main__\":\n    _save_company_meta(COMPANIES)\n    combined: list = []\n\n    for company in COMPANIES:\n        scraper_key = company.get(\"scraper\")\n        if not scraper_key:\n            print(f\"[SKIP] '{company.get('name')}' has no 'scraper' key — skipping\")\n            continue\n\n        scrape_fn = _load_scraper(scraper_key)\n\n        try:\n            jobs = scrape_fn(company)\n        except Exception as e:\n            print(f\"\\n[ERROR] {company['name']}: {e}\")\n            jobs = []\n\n        # Merge: replace any stale entries for this company, add fresh ones\n        combined = [j for j in combined if j.get(\"company\") != company[\"name\"]]\n        combined.extend(jobs)\n\n        save_output(combined)\n        print(f\"  Frontend updated — {len(combined)} total jobs so far\")\n\n    print(f\"\\n{'=' * 60}\")\n    print(f\"  Done: {len(combined)} jobs across {len(COMPANIES)} companies\")\n    print(f\"{'=' * 60}\")\n",
+    "pyproject.toml": "[project]\nname = \"openroles\"\nversion = \"0.1.0\"\ndescription = \"Add your description here\"\nreadme = \"README.md\"\nrequires-python = \">=3.11\"\ndependencies = [\n    \"langchain>=1.3.10\",\n    \"langchain-core>=1.4.8\",\n    \"langchain-groq>=1.1.3\",\n    \"python-dotenv>=1.2.2\",\n    \"requests>=2.34.2\",\n]\n",
+    "backend/config/config.py": "\n\nclass CompanyConfig:\n    \n    COMPANIES = [\n        {\n            \"id\": \"ascendion\",\n            \"scraper\":  \"eightfold\",\n            \"company\": {\n                \"name\": \"Ascendion\",\n                \"domain\": \"https://ascendion.com\",\n                \"image\": \"assets/images/companies/ascendion.png\"\n            },\n            \"links\": {\n                \"base_url\": \"https://jobs.ascendion.com\",\n                \"job_list_url\": \"https://jobs.ascendion.com/api/pcsx/search?domain=ascendion.com&query=&location=India&start=\",\n                \"job_main_url\": \"https://jobs.ascendion.com/api/pcsx/position_details?position_id={JOB_ID}&domain=ascendion.com\",\n                },\n            \"others\": {}\n        },\n]\n",
+    "backend/prompts/Classify_Category.md": "You are an expert job market analyst. Your task is to classify company department names from career portals and determine whether each department is **TECHNOLOGY/DATA RELATED** (`is_tech = true`) or **NON-TECH** (`is_tech = false`).\n\n## CLASSIFY AS TECH (`is_tech = true`) IF THE DEPARTMENT PRIMARILY INVOLVES:\n\n- Software & Engineering: Software Engineering, Software Development, Application Development, Engineering, Platform Engineering, Infrastructure Engineering, Systems Engineering, Architecture, Embedded Systems, Firmware, QA / Test Automation, Site Reliability Engineering (SRE), DevOps\n- Data: Data Science, Data Engineering, Data Analytics, Business Intelligence (BI), Reporting, Data Visualization, ETL / ELT, Data Warehousing, Statistical Analysis, Quantitative Research, Decision Science, Data Platforms, Data Strategy\n- Artificial Intelligence: Artificial Intelligence (AI), Machine Learning (ML), Deep Learning, NLP, Computer Vision, Generative AI, LLM Engineering, AI Research, AI Platforms\n- Information Technology: Information Technology (IT), Information Systems, Cloud Engineering, Networking, Databases, Cybersecurity, Identity & Access Management, Infrastructure, Enterprise Technology, Digital Workplace, Technical Support (IT)\n- Product & Digital: Product Management (unless explicitly non-technical, e.g., Product Marketing), Technical Product Management, Digital Products, Digital Engineering, Digital Transformation, Innovation Labs, Technology Strategy, Engineering Program Management, Technical Project Management\n- Design: UX, UI, Product Design, User Research, Interaction Design\n- Computational Research: Bioinformatics, Cheminformatics, Computational Biology, Computational Research, Scientific Computing, Research Computing\n\n---\n\n## CLASSIFY AS NOT TECH (`is_tech = false`) IF THE DEPARTMENT IS PRIMARILY:\n\n- Finance, Accounting, Treasury, FP&A, Audit, Tax, Legal, Compliance, Regulatory Affairs, Intellectual Property, Human Resources (HR), Talent Acquisition, Recruiting, Learning & Development, Marketing, Brand, Communications, Public Relations, Advertising, Sales, Business Development, Partnerships, Customer Success, Customer Service, Customer Experience, Medical Affairs, Clinical Operations, Pharmacovigilance, Drug Safety, Manufacturing, Supply Chain, Procurement, Logistics, Facilities, Real Estate, Environmental Health & Safety, General Administration, Operations (unless explicitly IT/Data/Technology Operations), Corporate Strategy or Consulting (unless explicitly Technology Strategy or Data Strategy)\n\n---\n\n## SPECIAL CLASSIFICATION RULES\n\n1. Classify **EVERY** department in the input. Never skip any.\n\n2. Use the **EXACT** department name from the input. Never rewrite or normalize names.\n\n3. Ignore company-specific naming conventions. Infer the department's primary function from its name rather than the company.\n\n4. If the department contains technology-related keywords such as **Engineering, Software, Technology, IT, Digital, Platform, Infrastructure, Cloud, DevOps, Security, AI, ML, Data, Analytics, BI, Product, UX, UI, Architecture, Research Computing**, classify it as **`true`** unless it is clearly non-technical.\n\n5. If a department is **ambiguous, uncommon, proprietary, unknown, or you cannot confidently determine its purpose**, classify it as **`is_tech = true`**.\n\n6. **Prefer false positives over false negatives.** The goal is to avoid missing any potential technology or data jobs. A downstream job-level classifier will later filter out non-technical postings, so when uncertain, err on the side of marking a department as technical.\n\n7. If a department combines technical and non-technical functions (e.g., \"Technology & Operations\", \"Digital & Marketing\"), classify it as **`true`** if any major part of the department is technology or data related.\n\n8. Only classify a department as **`false`** when its primary function is clearly non-technical.\n\n9. Provide a brief, specific, one-sentence reason for every classification.\n\n---\n\nRespond **ONLY** with valid JSON. Do not include markdown, explanations, or extra text.\n\n```json\n{\n  \"classifications\": [\n    {\n      \"name\": \"<exact department name>\",\n      \"is_tech\": true,\n      \"reason\": \"<one sentence>\"\n    }\n  ]\n}\n```\n",
+    "backend/prompts/Classify_DataJob.md": "You are an expert AI/ML and Data career analyst. Your task is to classify job postings that have already passed a department-level technology filter. Your objective is to identify **only genuine AI, Machine Learning, Data Science, Data Engineering, Analytics, Business Intelligence, Quantitative Research, and closely related computational roles.**\n\n# OBJECTIVE\n- Determine whether the role is primarily an AI/Data role.\n- Return:\n    - \"is_tech\": true (if the primary work is AI, ML, Data Science, Data Engineering, Analytics, Business Intelligence, LLMs, Generative AI, or related computational work.)\n    - \"is_tech\": false\n- Base your decision on **what the candidate will primarily work on**, not on technologies casually mentioned in the JD.\n- If AI/Data work represents the primary responsibility (roughly 50% or more of the day-to-day work), classify as \"is_tech\": true. Otherwise classify as \"is_tech\": false.\n\n# DECISION LOGIC\n\n- Explicit AI/Data titles: If the job title clearly indicates an AI/Data role, immediately classify it as `\"is_tech\": true`.\n  - Examples: AI Engineer, Machine Learning Engineer, Data Scientist, Data Engineer, Analytics Engineer, MLOps Engineer, LLM Engineer, Applied Scientist, AI Research Engineer.\n  - Only reject if the JD explicitly contradicts the title.\n\n- Generic technology titles: For generic titles such as Software Engineer, Backend Engineer, Frontend Engineer, Full Stack Engineer, Platform Engineer, Solutions Engineer, Product Engineer, or Software Architect:\n  - Use the **JD** to make the decision.\n  - Approve only if AI/Data is the primary responsibility.\n  - Reject if the role is primarily traditional software engineering, web development, backend services, infrastructure, cloud, DevOps, QA, or cybersecurity.\n\n- Generic business titles: Titles like Analyst, Consultant, Manager, Associate, Specialist, or Researcher are not sufficient.\n  - Approve only when the JD clearly indicates AI/Data as the primary responsibility.\n\n\n### Priority of evidence:\n\nFor generic titles, use this order:\n\n1. Responsibilities\n2. Required Skills\n3. Qualifications\n4. Job Title\n\nFor explicit AI/Data titles, the title is sufficient unless the JD clearly contradicts it.\n\n---\n\n# APPROVAL & REJECTION GUIDELINES\n\n  - Approve roles primarily involving: Artificial Intelligence, Machine Learning, Data Science, Data Engineering, Analytics, Business Intelligence, LLMs, Generative AI, NLP, Computer Vision, MLOps, Data Pipelines, ETL, Statistical Modeling, Predictive Analytics, Quantitative Research, AI Infrastructure, Scientific Computing\n\n  - Reject roles primarily involving: Traditional Software Engineering, Web or Mobile Development, Backend or Frontend Development, DevOps, Cloud Infrastructure, Site Reliability Engineering, QA / Testing, Cybersecurity, IT Support, Systems Administration, ERP / CRM, Sales, Marketing, HR, Finance, Legal, Customer Success, Clinical Data Management, Pharmacovigilance, Regulatory Affairs\n    - Unless the JD clearly indicates AI/Data engineering as the primary responsibility.\n\n# EDGE CASES\n\n* If the title is explicitly AI/Data, approve unless the JD clearly contradicts it.\n* If the title is generic, the JD is the source of truth.\n* Approve Software Engineers only when AI/Data work is the primary responsibility.\n* Reject jobs where AI/Data is only a preferred skill or a minor part of the role.\n* Ignore company descriptions and technology buzzwords. Base the decision on day-to-day responsibilities.\n* If the JD is missing, incomplete, or heavily truncated, use the title as the primary signal. Approve explicit AI/Data titles.\n\n# FIELD EXTRACTION\n\nExtract the following fields for **every job**, regardless of classification. Return `null` if unavailable.\n\n* `job_type`: Full-time, Part-time, Internship, Contract, Temporary, Apprenticeship, Freelance, or null.\n* `work_mode`: Remote, Hybrid, On-site, or null.\n* `locations`: Array of all hiring locations. Return cities when available; if only countries are mentioned, return the country names.\n* `salary_range`: Complete compensation or salary exactly as mentioned.\n* `posted_on`: Posting date.\n* `last_date`: Application deadline.\n\n# INPUT\n- Input is a JSON array containing: job_id, title, department, location, jd_snippet\n\n# OUTPUT\n\n```json\n{\n    \"is_tech\": true,\n    \"job_type\": \"Full-time\",\n    \"work_mode\": \"Hybrid\",\n    \"locations\": [\"Austin, TX\"],\n    \"salary_range\": \"$120,000 - $150,000\",\n    \"posted_on\": \"June 10, 2026\",\n    \"last_date\": null\n}\n```\nReturn **ONLY** valid JSON. Do not include markdown or any additional text.",
+    "vercel.json": "{\n  \"version\": 2,\n  \"framework\": null,\n  \"buildCommand\": \"\",\n  \"installCommand\": \"\",\n  \"outputDirectory\": \"public\",\n  \"rewrites\": [\n    { \"source\": \"/\", \"destination\": \"/html/index.html\" }\n  ]\n}\n"
+  }
+}
