@@ -18,7 +18,7 @@ import { generateReadme } from "./generators/readmeGenerator.js";
 
 import { detectFrameworks } from "./analyzers/frameworkAnalyzer.js";
 
-import { analyzeDependencies } from "./analyzers/dependencyAnalyzer.js";
+import { analyzeDependencies } from "./analyzers/dependencyAnalyzer/index.js";
 
 import { analyzeArchitecture } from "./analyzers/architectureAnalyzer.js";
 

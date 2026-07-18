@@ -1,8 +1,3 @@
-import { generateCompletion }
-from "./services/llmService.js";
+import { analyzeDependencies } from "./analyzers/dependencyAnalyzer/index.js";
 
-const response = await generateCompletion(
-    "Explain LangChain in 3 sentences."
-);
-
-console.log(response);
+console.log(analyzeDependencies);
