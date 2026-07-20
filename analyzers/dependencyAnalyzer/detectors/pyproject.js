@@ -2,29 +2,29 @@ export default function pyprojectDetector(files) {
 
     const dependencies = [];
 
-    const content =
-        files["pyproject.toml"];
+    for (const [path, content] of Object.entries(files)) {
 
-    if (!content) {
+        if (!path.endsWith("pyproject.toml")) {
+            continue;
+        }
 
-        return dependencies;
+        const matches = content.matchAll(
+            /"([^"]+)>=?/g
+        );
 
-    }
+        for (const match of matches) {
 
-    const matches =
-        content.matchAll(/"([^"]+)>=?/g);
+            dependencies.push({
 
-    for (const match of matches) {
+                name: match[1],
 
-        dependencies.push({
+                source: path,
 
-            name: match[1],
+                confidence: 1
 
-            source: "pyproject.toml",
+            });
 
-            confidence: 1
-
-        });
+        }
 
     }
 

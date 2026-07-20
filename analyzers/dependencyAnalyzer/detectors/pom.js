@@ -2,31 +2,29 @@ export default function pomDetector(files) {
 
     const dependencies = [];
 
-    const content =
-        files["pom.xml"];
+    for (const [path, content] of Object.entries(files)) {
 
-    if (!content) {
+        if (!path.endsWith("pom.xml")) {
+            continue;
+        }
 
-        return dependencies;
-
-    }
-
-    const matches =
-        content.matchAll(
+        const matches = content.matchAll(
             /<artifactId>(.*?)<\/artifactId>/g
         );
 
-    for (const match of matches) {
+        for (const match of matches) {
 
-        dependencies.push({
+            dependencies.push({
 
-            name: match[1],
+                name: match[1],
 
-            source: "pom.xml",
+                source: path,
 
-            confidence: 1
+                confidence: 1
 
-        });
+            });
+
+        }
 
     }
 

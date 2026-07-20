@@ -7,7 +7,6 @@ const client = new OpenAI({
 });
 
 export async function generateCompletion(prompt) {
-
     const response =
         await client.chat.completions.create({
             model: config.model,
@@ -22,7 +21,7 @@ export async function generateCompletion(prompt) {
                 }
             ],
             temperature: 0.3,
-            max_tokens: 6000
+            max_tokens: 1500
         });
     const content = response.choices[0].message.content;
 

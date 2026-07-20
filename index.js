@@ -2,6 +2,8 @@
 import fs from "fs";
 import path from "path";
 
+import { buildRepositorySummary } from "./analyzers/repositorySummary/index.js";
+
 import { fetchRepository } from "./collectors/repositoryCollector.js";
 
 import { fetchFileTree } from "./collectors/fileTreeCollector.js";
@@ -16,14 +18,13 @@ import { buildRepositoryContext } from "./analyzers/contextBuilder.js";
 
 import { generateReadme } from "./generators/readmeGenerator.js";
 
-import { detectFrameworks } from "./analyzers/frameworkAnalyzer.js";
+import { analyzeFrameworks } from "./analyzers/frameworkAnalyzer/index.js";
 
 import { analyzeDependencies } from "./analyzers/dependencyAnalyzer/index.js";
 
 import { analyzeArchitecture } from "./analyzers/architectureAnalyzer.js";
 
-import { detectProjectType } from "./analyzers/projectTypeAnalyzer.js";
-
+import { detectProjectType } from "./analyzers/projectTypeAnalyzer/index.js";
 import { analyzeFunctions } from "./analyzers/functionAnalyzer.js";
 
 import { analyzeEnvironmentVariables } from "./analyzers/environmentAnalyzer.js";
@@ -89,19 +90,17 @@ async function main() {
             importantFiles
         );
 
+    console.log(Object.keys(fileContents));
+
     const dependencies = analyzeDependencies(fileContents);
 
-    const frameworks =  detectFrameworks( dependencies, structure);
+    const frameworkAnalysis = analyzeFrameworks(dependencies,structure);
+    const frameworks = frameworkAnalysis.frameworks;
+    const runtime = frameworkAnalysis.runtime;
 
+    const architecture = analyzeArchitecture(structure);
 
-    const architecture = analyzeArchitecture(
-        structure
-    );
-
-    const projectType = detectProjectType(
-        repository,
-        dependencies
-    );
+    const projectType = detectProjectType(repository,frameworks,runtime,structure);
 
     const functions = analyzeFunctions(fileContents);
 
@@ -112,23 +111,42 @@ async function main() {
     const deployment = analyzeDeployment(structure);
 
     const repositoryContext = buildRepositoryContext(
-           repository,
-            structure,
-            frameworks,
-            dependencies,
-            architecture,
-            projectType,
-            fileContents,
-            functions,
-            environmentVariables,
-            databases,
-            deployment
+        repository,
+        structure,
+        frameworks,
+        runtime,
+        dependencies,
+        architecture,
+        projectType,
+        fileContents,
+        functions,
+        environmentVariables,
+        databases,
+        deployment
     );
 
+    const repositorySummary = buildRepositorySummary(repositoryContext);
+  
+    const llmContext = 
+    {
+        repository: repositoryContext.repository,
+
+        project: repositoryContext.project,
+
+        structure: repositoryContext.structure,
+
+        summary: repositorySummary
+
+    };
+
+    fs.writeFileSync(
+        path.join(outputDir,"repository-context.full.json"),
+        JSON.stringify(repositoryContext,null,2)
+    );
 
     fs.writeFileSync(
         path.join(outputDir,"repository-context.json"),
-        JSON.stringify(repositoryContext,null,2)
+        JSON.stringify(llmContext,null,2)
     );
 
     console.log(
@@ -138,17 +156,16 @@ async function main() {
             2
         )
     );
-    
-    const readme =
-        await generateReadme(
-            repositoryContext
-        );
+
+    const readme = await generateReadme(llmContext);
 
     //console.log(readme);
     fs.writeFileSync( path.join(outputDir,"README.generated.md"),readme);
 
     const confidenceReport = 
     {   projectType,
+
+        runtime,
 
         frameworks,
 

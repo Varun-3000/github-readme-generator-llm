@@ -2,10 +2,11 @@ export function buildRepositoryContext(
     repository,
     structure,
     frameworks,
+    runtime,
     dependencies,
     architecture,
     projectType,
-    files,
+    summary,
     functions,
     environmentVariables,
     databases,
@@ -26,14 +27,15 @@ export function buildRepositoryContext(
         },
 
         project: {
-            type: projectType.type || projectType,
-                    frameworks,
-                    dependencies,
-                    architecture,
-                    functions,
-                    environmentVariables,
-                    databases,
-                    deployment,
+            type: projectType.type,
+            runtime,
+            frameworks,
+            dependencies,
+            architecture,
+            functions,
+            environmentVariables,
+            databases,
+            deployment,
             confidence: projectType.confidence,
             evidence: projectType.evidence
         },
@@ -46,8 +48,6 @@ export function buildRepositoryContext(
             documentationFiles: structure.documentationFiles,
             folders: structure.folders
         },
-
-        files
-
+        summary
     };
 }

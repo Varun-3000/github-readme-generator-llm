@@ -2,55 +2,48 @@ export default function packageJsonDetector(files) {
 
     const dependencies = [];
 
-    if (!files["package.json"]) {
-        return dependencies;
-    }
+    for (const [path, content] of Object.entries(files)) {
 
-    try {
+        if (!path.endsWith("package.json")) {
+            continue;
+        }
 
-        const pkg =
-            JSON.parse(files["package.json"]);
+        try {
 
-        const sections = [
+            const pkg = JSON.parse(content);
 
-            pkg.dependencies,
+            const sections = [
 
-            pkg.devDependencies,
+                pkg.dependencies,
+                pkg.devDependencies,
+                pkg.peerDependencies,
+                pkg.optionalDependencies
 
-            pkg.peerDependencies,
+            ];
 
-            pkg.optionalDependencies
+            for (const section of sections) {
 
-        ];
+                if (!section) continue;
 
-        for (const section of sections) {
+                for (const dependency of Object.keys(section)) {
 
-            if (!section) continue;
+                    dependencies.push({
 
-            for (const dependency of Object.keys(section)) {
+                        name: dependency,
+                        source: path,
+                        confidence: 1
 
-                dependencies.push({
+                    });
 
-                    name: dependency,
-
-                    source: "package.json",
-
-                    confidence: 1
-
-                });
+                }
 
             }
 
+        } catch {
+            continue;
         }
 
     }
 
-    catch {
-
-        return [];
-
-    }
-
     return dependencies;
-
 }

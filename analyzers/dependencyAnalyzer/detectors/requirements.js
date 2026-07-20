@@ -2,39 +2,34 @@ export default function requirementsDetector(files) {
 
     const dependencies = [];
 
-    const content =
-        files["requirements.txt"];
+    for (const [path, content] of Object.entries(files)) {
 
-    if (!content) {
+        if (!path.endsWith("requirements.txt")) {
+            continue;
+        }
 
-        return dependencies;
+        const lines = content.split("\n");
 
-    }
+        for (const line of lines) {
 
-    const lines =
-        content.split("\n");
+            const dependency = line.trim();
 
-    for (const line of lines) {
+            if (
+                dependency &&
+                !dependency.startsWith("#")
+            ) {
 
-        const dependency =
-            line.trim();
+                dependencies.push({
 
-        if (
-            dependency &&
-            !dependency.startsWith("#")
-        ) {
+                    name: dependency.split(/[><=]/)[0],
 
-            dependencies.push({
+                    source: path,
 
-                name:
-                    dependency.split(/[><=]/)[0],
+                    confidence: 1
 
-                source:
-                    "requirements.txt",
+                });
 
-                confidence: 1
-
-            });
+            }
 
         }
 
